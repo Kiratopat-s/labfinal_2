@@ -3,6 +3,8 @@
 #include <thread>
 #include <vector>
 #include <algorithm>
+#include <future>
+#include <unordered_map>
 using namespace std;
 
 template <class T>
@@ -14,8 +16,71 @@ private:
 	void merge(T data[], int left, int mid, int right);
 };
 
+class TrieNode {
+public:
+	unordered_map<char, TrieNode*> children;
+	bool isEndOfWord;
+	int location;
+	TrieNode() : isEndOfWord(false), location(-1) {}
+};
+
+class Trie {
+private:
+	TrieNode* root;
+	void insert(TrieNode* node, const string& key, int location, size_t index);
+	TrieNode* search(TrieNode* node, const string& key, size_t index);
+public:
+	Trie();
+	void insert(const string& key, int location);
+	int search(const string& key);
+};
+
+Trie::Trie() {
+	root = new TrieNode();
+}
+
+void Trie::insert(const string& key, int location) {
+	insert(root, key, location, 0);
+}
+
+void Trie::insert(TrieNode* node, const string& key, int location, size_t index) {
+	if (index == key.size()) {
+		node->isEndOfWord = true;
+		node->location = location;
+		return;
+	}
+	char ch = tolower(key[index]); // Ensure case-insensitive insertion
+	if (node->children.find(ch) == node->children.end()) {
+		node->children[ch] = new TrieNode();
+	}
+	insert(node->children[ch], key, location, index + 1);
+}
+
+TrieNode* Trie::search(TrieNode* node, const string& key, size_t index) {
+	if (index == key.size()) {
+		return node;
+	}
+	char ch = tolower(key[index]); // Ensure case-insensitive search
+	if (node->children.find(ch) == node->children.end()) {
+		return nullptr;
+	}
+	return search(node->children[ch], key, index + 1);
+}
+
+int Trie::search(const string& key) {
+	TrieNode* node = search(root, key, 0);
+	if (node != nullptr && node->isEndOfWord) {
+		return node->location;
+	}
+	return -1;
+}
+
 template <class T>
-class MySearch{
+class MySearch {
+private:
+	Trie trie;
+	void buildTrie(T data[], int size);
+	int parallelTrieSearch(const string& key, int depth);
 public:
 	int search(T data[], int size, char *key);
 };
@@ -81,9 +146,26 @@ void MySort<T>::merge(T data[], int left, int mid, int right) {
 }
 
 template <class T>
+void MySearch<T>::buildTrie(T data[], int size) {
+	for (int i = 0; i < size; i++) {
+		trie.insert(data[i].get(), i);
+	}
+}
+
+template <class T>
+int MySearch<T>::parallelTrieSearch(const string& key, int depth) {
+	if (depth <= 0) {
+		return trie.search(key);
+	} else {
+		std::future<int> result = std::async([this, key]() { return trie.search(key); });
+		return result.get();
+	}
+}
+
+template <class T>
 int MySearch<T>::search(T data[], int size, char *key) {
-	int i;
-	for (i = 0; i < size; i++)
-		if (data[i] == key) return i;
-	return -1; // Not found
+	buildTrie(data, size);
+	string keyStr(key);
+	int maxDepth = std::thread::hardware_concurrency();
+	return parallelTrieSearch(keyStr, maxDepth);
 }
