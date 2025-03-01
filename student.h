@@ -14,6 +14,9 @@ public:
 private:
 	void parallelMergeSort(T data[], int left, int right, int depth);
 	void merge(T data[], int left, int mid, int right);
+	void insertionSort(T data[], int left, int right);
+	static const int INSERTION_SORT_THRESHOLD = 32; // Threshold for switching to insertion sort
+	static const int MAX_THREADS = 4; // Maximum number of threads to create
 };
 
 template <class T>
@@ -30,13 +33,18 @@ private:
 
 template <class T>
 void MySort<T>::sort(T data[], int size) {
-	int maxDepth = std::thread::hardware_concurrency();
+	int maxDepth = min(MAX_THREADS, static_cast<int>(std::thread::hardware_concurrency()));
 	parallelMergeSort(data, 0, size - 1, maxDepth);
 }
 
 template <class T>
 void MySort<T>::parallelMergeSort(T data[], int left, int right, int depth) {
 	if (left >= right) return;
+
+	if (right - left + 1 <= INSERTION_SORT_THRESHOLD) {
+		insertionSort(data, left, right);
+		return;
+	}
 
 	if (depth <= 0) {
 		std::sort(data + left, data + right + 1);
@@ -85,6 +93,19 @@ void MySort<T>::merge(T data[], int left, int mid, int right) {
 		data[k] = rightArray[j];
 		j++;
 		k++;
+	}
+}
+
+template <class T>
+void MySort<T>::insertionSort(T data[], int left, int right) {
+	for (int i = left + 1; i <= right; i++) {
+		T key = data[i];
+		int j = i - 1;
+		while (j >= left && data[j] > key) {
+			data[j + 1] = data[j];
+			j--;
+		}
+		data[j + 1] = key;
 	}
 }
 
