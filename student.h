@@ -3,6 +3,7 @@
 #include <thread>
 #include <vector>
 #include <algorithm>
+#include <future>
 using namespace std;
 
 template <class T>
@@ -15,9 +16,11 @@ private:
 };
 
 template <class T>
-class MySearch{
+class MySearch {
 public:
 	int search(T data[], int size, char *key);
+private:
+	int parallelBinarySearch(T data[], int left, int right, const T& key, int depth);
 };
 
 template <class T>
@@ -82,8 +85,33 @@ void MySort<T>::merge(T data[], int left, int mid, int right) {
 
 template <class T>
 int MySearch<T>::search(T data[], int size, char *key) {
-	int i;
-	for (i = 0; i < size; i++)
-		if (data[i] == key) return i;
-	return -1; // Not found
+	T keyStr(key);
+	int maxDepth = std::thread::hardware_concurrency();
+	return parallelBinarySearch(data, 0, size - 1, keyStr, maxDepth);
+}
+
+template <class T>
+int MySearch<T>::parallelBinarySearch(T data[], int left, int right, const T& key, int depth) {
+	if (left > right) return -1;
+
+	if (depth <= 0) {
+		while (left <= right) {
+			int mid = left + (right - left) / 2;
+			if (data[mid] == key) return mid;
+			if (data[mid] < key) left = mid + 1;
+			else right = mid - 1;
+		}
+		return -1;
+	} else {
+		int mid = left + (right - left) / 2;
+		if (data[mid] == key) return mid;
+
+		std::future<int> leftResult = std::async(&MySearch::parallelBinarySearch, this, data, left, mid - 1, key, depth - 1);
+		std::future<int> rightResult = std::async(&MySearch::parallelBinarySearch, this, data, mid + 1, right, key, depth - 1);
+
+		int leftIndex = leftResult.get();
+		if (leftIndex != -1) return leftIndex;
+
+		return rightResult.get();
+	}
 }
