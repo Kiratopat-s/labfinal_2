@@ -3,11 +3,22 @@
   "configurations": [
     {
       "name": "C/C++ Runner: Debug Session",
-      "type": "lldb",
+      "type": "cppdbg",
       "request": "launch",
       "args": [],
-      "cwd": "/Users/kiratipatsawangsisombat/Desktop/MUT/Y_1 T_2/MIIC1222 Data struc algo/labfinal_2",
-      "program": "/Users/kiratipatsawangsisombat/Desktop/MUT/Y_1 T_2/MIIC1222 Data struc algo/labfinal_2/build/Debug/outDebug"
+      "stopAtEntry": false,
+      "externalConsole": true,
+      "cwd": "c:/Users/Capac/OneDrive/เดสก์ท็อป/labfinal",
+      "program": "c:/Users/Capac/OneDrive/เดสก์ท็อป/labfinal/build/Debug/outDebug",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
     }
   ]
 }

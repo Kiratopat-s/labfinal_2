@@ -11,7 +11,7 @@ using namespace std;
 
 char *strcpy(char *dest, const char *src);
 char *strcat(char *dest, const char *src);
-int custom_strlen(const char *st);
+int strlen(const char *st);
 
 class Str {
 private:
@@ -24,43 +24,39 @@ public:
 	char *get();
 	void setLocation(int loc) { location = loc; }
 	int getLocation() { return location; }
-	bool operator == (const Str& s) const {
+	bool operator == (Str& s) {
 		int i;
 		for (i = 0; i < MAXSTRLEN && st[i] != 0 && s.st[i] != 0; i++) {
-			if (tolower(st[i]) != tolower(s.st[i])) break;
+			if (tolower(st[i]) != tolower(s.st[i]))break;
 		}
+//		if (s.st[i] == 0) return true;
 		if (s.st[i] == st[i]) return true;
 		return false;
 	}
-	bool operator == (const char *s) const {
+	bool operator == (char *s) {
 		int i;
 		for (i = 0; i < MAXSTRLEN && st[i] != 0 && s[i] != 0; i++) {
-			if (tolower(st[i]) != tolower(s[i])) break;
+			if (tolower(st[i]) != tolower(s[i]))break;
 		}
 		if (s[i] == st[i]) return true;
+//		if (s[i] == 0) return true;
 		return false;
 	}
-	bool operator > (const Str& s) const {
+	bool operator > (Str& s) {
 		int i;
 		for (i = 0; i < MAXSTRLEN && st[i] != 0 && s.st[i] != 0; i++) {
-			if (st[i] != s.st[i]) break;
+			if (st[i] != s.st[i])break;
 		}
-		if (st[i] > s.st[i]) return true;
+		if (st[i] > s.st[i])return true;
 		return false;
 	}
-	bool operator < (const Str& s) const {
+	bool operator < (Str& s) {
 		int i;
 		for (i = 0; i < MAXSTRLEN && st[i] != 0 && s.st[i] != 0; i++) {
-			if (st[i] != s.st[i]) break;
+			if (st[i] != s.st[i])break;
 		}
-		if (st[i] < s.st[i]) return true;
+		if (st[i] < s.st[i])return true;
 		return false;
-	}
-	bool operator <= (const Str& s) const {
-		return !(*this > s);
-	}
-	bool operator >= (const Str& s) const {
-		return !(*this < s);
 	}
 	friend std::ostream& operator << (std::ostream& os, Str& s);
 };
@@ -83,7 +79,7 @@ public:
 	void findData(int loc,char *st,int maxlen);
 	int getSize() { return size; }
 	void swap(T *d1, T *d2);
-	void showData(T data[], int dataSize, int i, int j);
+	void showData(T data[], int size, int i, int j);
 	void setStop(bool flag);
 };
 
@@ -103,7 +99,7 @@ int main() {
 	sort->sort(s,sort->getSize());
 	///////////////////////////
 	clock2 = chrono::high_resolution_clock::now();
-	// sort->showData(s, sort->getSize(), -1, -1);
+	sort->showData(s, sort->getSize(), -1, -1);
 	cout << endl << endl;
 	cout << "Time passed: " << (chrono::duration_cast<chrono::duration<double>>(clock2-clock1).count())*1000 << " msec." << endl;
 	cout << "After sorting " << endl;
@@ -155,7 +151,7 @@ bool Sort<T>::load(Str s[],char *name) {
 		s[size].setLocation((int)f.tellg());
 		f.getline(tmp, 8192);
 		//discard empty line
-		if (custom_strlen(tmp) < 2) continue;
+		if (strlen(tmp) < 2) continue;
 		for (i = 0; i < MAXSTRLEN && (tmp[i] != '.'); i++)
 		    tmpData[i] = (char)tolower(tmp[i]);
 		//remove word type
@@ -197,21 +193,21 @@ void Sort<T>::swap(T *d1, T *d2) {
 }
 
 template <class T>
-void Sort<T>::showData(T data[], int dataSize, int i, int j) {
+void Sort<T>::showData(T data[], int size, int i, int j) {
 	int x;
 	if (i > -1) {
-		for (x = 0; x < dataSize; x++) {
+		for (x = 0; x < size; x++) {
 			if (i != x) cout << "         ";
 			else cout << ">> i <<<";
 		}
 		cout << endl;
 	}
-	for (x = 0; x < dataSize; x++) {
+	for (x = 0; x < size; x++) {
 		cout << data[x] << "][";
 	}
 	cout << endl;
 	if (j > -1) {
-		for (x = 0; x < dataSize; x++) {
+		for (x = 0; x < size; x++) {
 			if (j != x) cout << "         ";
 			else cout << ">> j <<<";
 		}
@@ -245,7 +241,7 @@ char *Str::get() {
 	return st;
 }
 
-int custom_strlen(const char *st) {
+int strlen(const char *st) {
 	int len = 0;
 
 	while (st[len] != 0) len++;
@@ -253,7 +249,7 @@ int custom_strlen(const char *st) {
 }
 
 char *strcat(char *dest, const char *src) {
-	strcpy(dest + custom_strlen(dest), src);
+	strcpy(dest + strlen(dest), src);
 	return dest;
 }
 
