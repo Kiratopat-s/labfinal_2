@@ -4,6 +4,7 @@
 #include <thread>
 #include <vector>
 #include <algorithm>
+#include <array>
 using namespace std;
 
 template <class T>
@@ -21,7 +22,10 @@ public:
 	int search(T data[], int size, char *key);
 private:
 	unordered_map<string, int> hashTable;
+	array<pair<string, int>, 16> cache; // Small fixed-size cache
 	void buildHashTable(T data[], int size);
+	int cacheLookup(const string& key);
+	void cacheInsert(const string& key, int value);
 };
 
 template <class T>
@@ -92,14 +96,41 @@ void MySearch<T>::buildHashTable(T data[], int size) {
 }
 
 template <class T>
+int MySearch<T>::cacheLookup(const string& key) {
+	for (const auto& entry : cache) {
+		if (entry.first == key) {
+			return entry.second;
+		}
+	}
+	return -1; // Not found in cache
+}
+
+template <class T>
+void MySearch<T>::cacheInsert(const string& key, int value) {
+	static size_t cacheIndex = 0;
+	cache[cacheIndex] = {key, value};
+	cacheIndex = (cacheIndex + 1) % cache.size();
+}
+
+template <class T>
 int MySearch<T>::search(T data[], int size, char *key) {
 	if (hashTable.empty()) {
 		buildHashTable(data, size);
 	}
 	string keyStr(key);
+
+	// Check cache first
+	int cacheResult = cacheLookup(keyStr);
+	if (cacheResult != -1) {
+		return cacheResult;
+	}
+
+	// Check hash table
 	auto it = hashTable.find(keyStr);
 	if (it != hashTable.end()) {
+		cacheInsert(keyStr, it->second);
 		return it->second;
 	}
+
 	return -1; // Not found
 }
