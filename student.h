@@ -1,5 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
+#include <unordered_map>
 #include <thread>
 #include <vector>
 #include <algorithm>
@@ -15,9 +16,12 @@ private:
 };
 
 template <class T>
-class MySearch{
+class MySearch {
 public:
 	int search(T data[], int size, char *key);
+private:
+	unordered_map<string, int> hashTable;
+	void buildHashTable(T data[], int size);
 };
 
 template <class T>
@@ -81,9 +85,21 @@ void MySort<T>::merge(T data[], int left, int mid, int right) {
 }
 
 template <class T>
+void MySearch<T>::buildHashTable(T data[], int size) {
+	for (int i = 0; i < size; i++) {
+		hashTable[data[i].get()] = i;
+	}
+}
+
+template <class T>
 int MySearch<T>::search(T data[], int size, char *key) {
-	int i;
-	for (i = 0; i < size; i++)
-		if (data[i] == key) return i;
+	if (hashTable.empty()) {
+		buildHashTable(data, size);
+	}
+	string keyStr(key);
+	auto it = hashTable.find(keyStr);
+	if (it != hashTable.end()) {
+		return it->second;
+	}
 	return -1; // Not found
 }
