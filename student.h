@@ -4,6 +4,7 @@
 #include <thread>
 #include <vector>
 #include <algorithm>
+#include <immintrin.h> // For SIMD instructions
 using namespace std;
 
 template <class T>
@@ -22,6 +23,7 @@ public:
 private:
 	unordered_map<string, int> hashTable;
 	void buildHashTable(T data[], int size);
+	int simdSearch(const T* data, int size, const T& key);
 };
 
 template <class T>
@@ -92,6 +94,22 @@ void MySearch<T>::buildHashTable(T data[], int size) {
 }
 
 template <class T>
+int MySearch<T>::simdSearch(const T* data, int size, const T& key) {
+	// SIMD search implementation
+	// This is a simplified example and may need to be adapted for specific use cases
+	__m256i keyVec = _mm256_set1_epi8(key.get()[0]); // Assuming key is a single character for simplicity
+	for (int i = 0; i < size; i += 32) {
+		__m256i dataVec = _mm256_loadu_si256((__m256i*)&data[i]);
+		__m256i cmp = _mm256_cmpeq_epi8(dataVec, keyVec);
+		int mask = _mm256_movemask_epi8(cmp);
+		if (mask != 0) {
+			return i + __builtin_ctz(mask); // Find the first set bit
+		}
+	}
+	return -1; // Not found
+}
+
+template <class T>
 int MySearch<T>::search(T data[], int size, char *key) {
 	if (hashTable.empty()) {
 		buildHashTable(data, size);
@@ -101,5 +119,5 @@ int MySearch<T>::search(T data[], int size, char *key) {
 	if (it != hashTable.end()) {
 		return it->second;
 	}
-	return -1; // Not found
+	return simdSearch(data, size, keyStr); // Fallback to SIMD search if not found in hash table
 }
