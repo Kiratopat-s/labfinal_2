@@ -15,13 +15,12 @@ private:
 	void parallelMergeSort(T data[], int left, int right, int depth);
 	void merge(T data[], int left, int mid, int right);
 	void insertionSort(T data[], int left, int right);
-	static const int INSERTION_SORT_THRESHOLD = 32; // Threshold for switching to insertion sort
-	static const int MAX_THREADS; // Maximum number of threads to create
+	static const int INSERTION_SORT_THRESHOLD = 64; 
+	static const int MAX_THREADS; 
 };
 
-// Define the static constant outside the class
 template <class T>
-const int MySort<T>::MAX_THREADS = 1;
+const int MySort<T>::MAX_THREADS = 2;
 
 template <class T>
 class MySearch {
@@ -29,7 +28,7 @@ public:
 	int search(T data[], int size, char *key);
 private:
 	unordered_map<string, int> hashTable;
-	array<pair<string, int>, 16> cache; // Small fixed-size cache
+	array<pair<string, int>, 16> cache;
 	void buildHashTable(T data[], int size);
 	int cacheLookup(const string& key);
 	void cacheInsert(const string& key, int value);
@@ -77,7 +76,7 @@ void MySort<T>::merge(T data[], int left, int mid, int right) {
 
 	int i = 0, j = 0, k = left;
 	while (i < n1 && j < n2) {
-		if (!(leftArray[i] > rightArray[j])) { // Use !(a > b) instead of a <= b
+		if (!(leftArray[i] > rightArray[j])) {
 			data[k] = leftArray[i];
 			i++;
 		} else {
@@ -127,7 +126,7 @@ int MySearch<T>::cacheLookup(const string& key) {
 			return entry.second;
 		}
 	}
-	return -1; // Not found in cache
+	return -1;
 }
 
 template <class T>
@@ -144,18 +143,18 @@ int MySearch<T>::search(T data[], int size, char *key) {
 	}
 	string keyStr(key);
 
-	// Check cache first
+
 	int cacheResult = cacheLookup(keyStr);
 	if (cacheResult != -1) {
 		return cacheResult;
 	}
 
-	// Check hash table
+
 	auto it = hashTable.find(keyStr);
 	if (it != hashTable.end()) {
 		cacheInsert(keyStr, it->second);
 		return it->second;
 	}
 
-	return -1; // Not found
+	return -1;
 }
