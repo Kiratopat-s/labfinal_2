@@ -21,7 +21,7 @@ private:
 
 // Define the static constant outside the class
 template <class T>
-const int MySort<T>::MAX_THREADS = 2;
+const int MySort<T>::MAX_THREADS = 1;
 
 template <class T>
 class MySearch {
